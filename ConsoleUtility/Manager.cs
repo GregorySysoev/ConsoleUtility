@@ -15,7 +15,6 @@ namespace ConsoleUtility
         }
         public Manager()
         {
-
         }
     }
 }
