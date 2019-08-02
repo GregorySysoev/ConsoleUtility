@@ -1,4 +1,5 @@
 ﻿using System;
+using ConsoleUtility;
 
 namespace ConsoleUtility
 {
@@ -6,7 +7,9 @@ namespace ConsoleUtility
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            Manager manager = new Manager();
+            manager.IdentifyCommand(args);
+            manager.RunCommand();
         }
     }
 }
