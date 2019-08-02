@@ -7,7 +7,8 @@ namespace ConsoleUtility
     {
         static void Main(string[] args)
         {
-            Manager manager = new Manager();
+            IWriter cw = new ConsoleWriter();
+            Manager manager = new Manager(cw);
             manager.IdentifyCommand(args);
             manager.RunCommand();
         }

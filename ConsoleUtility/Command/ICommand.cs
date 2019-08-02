@@ -2,6 +2,6 @@ namespace ConsoleUtility
 {
     public interface ICommand
     {
-        void Execute();
+        void Execute(IWriter writer);
     }
 }

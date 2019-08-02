@@ -1,6 +1,6 @@
 using System;
 
-namespace myTree
+namespace ConsoleUtility
 {
     public class ConsoleWriter : IWriter
     {

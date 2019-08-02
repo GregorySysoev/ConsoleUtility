@@ -3,18 +3,20 @@ namespace ConsoleUtility
 {
     public class Manager
     {
-        public ICommand command;
+        private ICommand _command;
+        private IWriter _writer;
         public void RunCommand()
         {
-            command.Execute();
+            _command.Execute(_writer);
         }
         public void IdentifyCommand(string[] argumentsOfCommandLine)
         {
             var parser = new Parser();
-            command = parser.Parse(argumentsOfCommandLine);
+            _command = parser.Parse(argumentsOfCommandLine);
         }
-        public Manager()
+        public Manager(IWriter writer)
         {
+            _writer = writer;
         }
     }
 }

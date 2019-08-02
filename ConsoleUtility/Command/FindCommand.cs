@@ -10,9 +10,7 @@ namespace ConsoleUtility
             "-s"
         };
 
-
-
-        public void Execute()
+        public void Execute(IWriter writer)
         {
 
         }

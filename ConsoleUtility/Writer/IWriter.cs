@@ -1,4 +1,4 @@
-namespace myTree
+namespace ConsoleUtility
 {
     public interface IWriter
     {
