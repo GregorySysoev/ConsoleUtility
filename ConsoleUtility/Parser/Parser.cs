@@ -1,43 +1,46 @@
 using System;
-
+using System.Collections;
 using ConsoleUtility;
+using System.Collections.Generic;
 
 namespace ConsoleUtility
 {
     public class Parser
     {
-        private ICommand _command;
-        public ICommand Parse(string[] args)
+        public List<ICommand> Parse(string[] args)
         {
-            if (args.Length == 0)
+            List<ICommand> commands = new List<ICommand>();
+            if (args == null)
             {
-                return new ErrorCommand();
+                commands.Add(new ErrorCommand());
+                return commands;
             }
-
-            _command = IdentifyCommand(args[0]);
-
-            for (int i = 1; i < args.Length; i++)
-            {
-                ParseArgumentOfCommand(args[i]);
-            }
-            return _command;
+            commands = IdentifyCommands(args);
+            return commands;
         }
         public Parser()
         {
 
         }
 
-        public ICommand IdentifyCommand(string possibleCommandName)
+        public List<ICommand> IdentifyCommands(string[] args)
         {
-            var commandName = possibleCommandName + "Command";
-            var type = Type.GetType(commandName);
+            List<ICommand> result = new List<ICommand>();
 
-            var result = (ICommand)Activator.CreateInstance(type);
+            var assembly = typeof(ICommand).Assembly;
+            var classes = assembly.GetTypes();
+
+            for (int j = 0; j < args.Length; j++)
+            {
+                for (int i = 0; i < classes.Length; i++)
+                {
+                    if (classes[i].Equals(args[j])) //
+                    {
+                        result.Add((ICommand)classes[i]);
+                    }
+                }
+            }
             return result;
-        }
-
-        public void ParseArgumentOfCommand(string arg)
-        {
         }
     }
 }

@@ -1,13 +1,13 @@
 using ConsoleUtility;
+using System.Collections.Generic;
 namespace ConsoleUtility
 {
     public class Manager
     {
-        private ICommand _command;
+        public List<ICommand> _command;
         private IWriter _writer;
         public void RunCommand()
         {
-            _command.Execute(_writer);
         }
         public void IdentifyCommand(string[] argumentsOfCommandLine)
         {
