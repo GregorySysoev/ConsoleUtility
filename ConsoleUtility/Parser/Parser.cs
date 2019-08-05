@@ -21,7 +21,8 @@ namespace ConsoleUtility
 
             var commandAvailableList = GetCommandsAvailableList();
             bool wasError = false;
-            for (int i = 0, j = 0; j < commandAvailableList.Count & !wasError; j++)
+            int i = 0, j = 0;
+            for (j = 0; j < commandAvailableList.Count & !wasError; j++)
             {
                 if (commandAvailableList[j].GetType().GetCustomAttribute<CommandPrefixAttribute>() == null)
                 {
@@ -63,6 +64,7 @@ namespace ConsoleUtility
                             }
                             catch (Exception)
                             {
+                                wasError = true;
                                 break;
                             }
                             property.SetValue(resultCommands.Last(), Convert.ChangeType(args[i], propertyType));
@@ -74,8 +76,31 @@ namespace ConsoleUtility
                 {
                     wasError = true;
                 }
-
             }
+
+            if (i < args.Length)
+            {
+                if (resultCommands.Count != 0)
+                {
+                    if (resultCommands.Last().GetType().GetProperty("Value") != null)
+                    {
+                        Type commandWithValue = resultCommands.Last().GetType();
+                        PropertyInfo property = commandWithValue.GetProperty("Value");
+                        Type propertyType = property.PropertyType;
+
+                        try
+                        {
+                            Convert.ChangeType(args[i], propertyType);
+                        }
+                        catch (Exception)
+                        {
+                            wasError = true;
+                        }
+                        property.SetValue(resultCommands.Last(), Convert.ChangeType(args[i], propertyType));
+                    }
+                }
+            }
+
             if ((wasError == true) | (resultCommands.Count == 0))
             {
                 return new List<ICommand>()
@@ -84,65 +109,7 @@ namespace ConsoleUtility
                     };
             }
             return resultCommands;
-            // bool wasError = false;
-            // for (int i = 0, j = 0; i < args.Length & !wasError; i++)
-            // {
-            //     for (j = 0; j < commandAvailableList.Count; j++)
-            //     {
-            //         if (commandAvailableList[j].GetType().GetCustomAttribute<CommandPrefixAttribute>() == null)
-            //         {
-            //             continue;
-            //         }
-
-            //         bool commandDecided = commandAvailableList[j]
-            //             .GetType()
-            //             .GetCustomAttribute<CommandPrefixAttribute>()
-            //             .prefix
-            //             .Contains(args[i]);
-
-            //         if (commandDecided)
-            //         {
-            //             if (!resultCommands.Contains(commandAvailableList[j]))
-            //             {
-            //                 resultCommands.Add(commandAvailableList[j]);
-            //             }
-            //             break;
-            //         }
-            //         if ((resultCommands.Count == 0))
-            //         {
-            //             continue;
-            //         }
-
-            //         if (resultCommands.Last().GetType().GetProperty("Value") == null)
-            //         {
-            //             continue;
-            //         }
-            //         else
-            //         {
-            //             Type commandWithValue = resultCommands.Last().GetType();
-            //             PropertyInfo oProp = commandWithValue.GetProperty("Value");
-            //             Type tProp = oProp.PropertyType;
-
-            //             oProp.SetValue(resultCommands.Last(), Convert.ChangeType(args[i], tProp));
-            //             commandWithValue.GetProperty("Value")
-            //             .SetValue(resultCommands.Last(), args);
-            //             break;
-            //         }
-            //     }
-            //     if (j == commandAvailableList.Count)
-            //     {
-            //         wasError = true;
-            //     }
-            // }
-
-
-            // if (wasError)
-            // {
-            //     resultCommands.Add(new ErrorCommand());
-            // }
-            // return resultCommands;
         }
-
 
         public List<ICommand> GetCommandsAvailableList()
         {

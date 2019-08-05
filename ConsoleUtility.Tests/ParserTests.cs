@@ -58,7 +58,7 @@ namespace ConsoleUtility.Tests
             manager.IdentifyCommand(args);
             foreach (var item in manager._command)
             {
-                Assert.True(item is ICommand);
+                Assert.True(item is ThreadSelectCommand);
             }
         }
     }
