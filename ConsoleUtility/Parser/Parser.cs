@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using ConsoleUtility;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ConsoleUtility
 {
@@ -15,7 +16,18 @@ namespace ConsoleUtility
                 commands.Add(new ErrorCommand());
                 return commands;
             }
-            commands = IdentifyCommands(args);
+
+            var commandAvailableList = GetCommandsAvailableList();
+            foreach (var arg in args)
+            {
+                foreach (var commandAvailable in commandAvailableList)
+                {
+                    var attribute = (CommandPrefixAttribute)typeof(ICommand)
+                    .GetCustomAttributes(typeof(CommandPrefixAttribute), false)?.First();
+                    commands.Add(commandAvailable);
+                }
+            }
+
             return commands;
         }
         public Parser()
@@ -23,24 +35,15 @@ namespace ConsoleUtility
 
         }
 
-        public List<ICommand> IdentifyCommands(string[] args)
+        public List<ICommand> GetCommandsAvailableList()
         {
-            List<ICommand> result = new List<ICommand>();
-
             var assembly = typeof(ICommand).Assembly;
-            var classes = assembly.GetTypes();
+            var types = assembly.GetTypes()
+                .Where(x => typeof(ICommand).IsAssignableFrom(x) && !x.IsInterface)
+                .Select(c => (ICommand)Activator.CreateInstance(c))
+                .ToList();
 
-            for (int j = 0; j < args.Length; j++)
-            {
-                for (int i = 0; i < classes.Length; i++)
-                {
-                    if (classes[i].Equals(args[j])) //
-                    {
-                        result.Add((ICommand)classes[i]);
-                    }
-                }
-            }
-            return result;
+            return types;
         }
     }
 }
