@@ -6,8 +6,10 @@ namespace ConsoleUtility
     {
         public List<ICommand> _command;
         private IWriter _writer;
-        public void RunCommand()
+        public void RunCommands()
         {
+            Executor executor = new Executor(_command, _writer);
+            executor.Execute();
         }
         public void IdentifyCommand(string[] argumentsOfCommandLine)
         {

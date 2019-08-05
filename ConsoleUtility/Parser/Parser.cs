@@ -11,36 +11,124 @@ namespace ConsoleUtility
     {
         public List<ICommand> Parse(string[] args)
         {
-            List<ICommand> commands = new List<ICommand>();
+            List<ICommand> resultCommands = new List<ICommand>();
+
             if (args == null)
             {
-                commands.Add(new ErrorCommand());
-                return commands;
+                resultCommands.Add(new ErrorCommand());
+                return resultCommands;
             }
-
             var commandAvailableList = GetCommandsAvailableList();
-            foreach (var arg in args)
+            bool wasError = false;
+            for (int i = 0, j = 0; j < commandAvailableList.Count & !wasError; j++)
             {
-                foreach (var commandAvailable in commandAvailableList)
+                if (commandAvailableList[j].GetType().GetCustomAttribute<CommandPrefixAttribute>() == null)
                 {
-                    if (commandAvailable.GetType().GetCustomAttribute<CommandPrefixAttribute>() == null)
+                    continue;
+                }
+                for (i = 0; i < args.Length; i++)
+                {
+                    bool commandDecided = commandAvailableList[j]
+                        .GetType()
+                        .GetCustomAttribute<CommandPrefixAttribute>()
+                        .prefix
+                        .Contains(args[i]);
+
+                    if (commandDecided)
                     {
-                        continue;
+                        if (!resultCommands.Contains(commandAvailableList[j]))
+                        {
+                            resultCommands.Add(commandAvailableList[j]);
+                        }
+                        break;
                     }
 
-                    bool command = commandAvailable.GetType().GetCustomAttribute<CommandPrefixAttribute>().prefix.Contains(arg);
-                    if (command && !commands.Contains(commandAvailable))
+                    if (resultCommands.Count != 0)
                     {
-                        commands.Add(commandAvailable);
+                        if (resultCommands.Last().GetType().GetProperty("Value") != null)
+                        {
+                            Type commandWithValue = resultCommands.Last().GetType();
+                            PropertyInfo property = commandWithValue.GetProperty("Value");
+                            Type propertyType = property.PropertyType;
+
+                            property.SetValue(resultCommands.Last(), Convert.ChangeType(args[i], propertyType));
+                            break;
+                        }
                     }
                 }
-            }
-            return commands;
-        }
-        public Parser()
-        {
+                if (i == args.Length)
+                {
+                    wasError = true;
+                }
 
+            }
+            if ((wasError == true) | (resultCommands.Count == 0))
+            {
+                return new List<ICommand>()
+                    {
+                        new ErrorCommand()
+                    };
+            }
+            return resultCommands;
+            // bool wasError = false;
+            // for (int i = 0, j = 0; i < args.Length & !wasError; i++)
+            // {
+            //     for (j = 0; j < commandAvailableList.Count; j++)
+            //     {
+            //         if (commandAvailableList[j].GetType().GetCustomAttribute<CommandPrefixAttribute>() == null)
+            //         {
+            //             continue;
+            //         }
+
+            //         bool commandDecided = commandAvailableList[j]
+            //             .GetType()
+            //             .GetCustomAttribute<CommandPrefixAttribute>()
+            //             .prefix
+            //             .Contains(args[i]);
+
+            //         if (commandDecided)
+            //         {
+            //             if (!resultCommands.Contains(commandAvailableList[j]))
+            //             {
+            //                 resultCommands.Add(commandAvailableList[j]);
+            //             }
+            //             break;
+            //         }
+            //         if ((resultCommands.Count == 0))
+            //         {
+            //             continue;
+            //         }
+
+            //         if (resultCommands.Last().GetType().GetProperty("Value") == null)
+            //         {
+            //             continue;
+            //         }
+            //         else
+            //         {
+            //             Type commandWithValue = resultCommands.Last().GetType();
+            //             PropertyInfo oProp = commandWithValue.GetProperty("Value");
+            //             Type tProp = oProp.PropertyType;
+
+            //             oProp.SetValue(resultCommands.Last(), Convert.ChangeType(args[i], tProp));
+            //             commandWithValue.GetProperty("Value")
+            //             .SetValue(resultCommands.Last(), args);
+            //             break;
+            //         }
+            //     }
+            //     if (j == commandAvailableList.Count)
+            //     {
+            //         wasError = true;
+            //     }
+            // }
+
+
+            // if (wasError)
+            // {
+            //     resultCommands.Add(new ErrorCommand());
+            // }
+            // return resultCommands;
         }
+
 
         public List<ICommand> GetCommandsAvailableList()
         {
@@ -51,6 +139,11 @@ namespace ConsoleUtility
                 .ToList();
 
             return types;
+        }
+
+        public Parser()
+        {
+
         }
     }
 }

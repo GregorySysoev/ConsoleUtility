@@ -10,7 +10,7 @@ namespace ConsoleUtility
             IWriter cw = new ConsoleWriter();
             Manager manager = new Manager(cw);
             manager.IdentifyCommand(args);
-            manager.RunCommand();
+            manager.RunCommands();
         }
     }
 }
