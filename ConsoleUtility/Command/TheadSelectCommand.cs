@@ -1,8 +1,9 @@
 using ConsoleUtility;
 namespace ConsoleUtility
 {
-    [CommandPrefix("-t")]
-    [CommandPrefix("--thread")]
+    [CommandPrefix(new string[] { "-t", "--thread" })]
+
+    // [CommandPrefix("--thread")]
     public class ThreadSelectCommand : ICommand
     {
 

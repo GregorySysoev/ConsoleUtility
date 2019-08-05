@@ -3,6 +3,7 @@ using System.Collections;
 using ConsoleUtility;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace ConsoleUtility
 {
@@ -22,12 +23,18 @@ namespace ConsoleUtility
             {
                 foreach (var commandAvailable in commandAvailableList)
                 {
-                    var attribute = (CommandPrefixAttribute)typeof(ICommand)
-                    .GetCustomAttributes(typeof(CommandPrefixAttribute), false)?.First();
-                    commands.Add(commandAvailable);
+                    if (commandAvailable.GetType().GetCustomAttribute<CommandPrefixAttribute>() == null)
+                    {
+                        continue;
+                    }
+
+                    bool command = commandAvailable.GetType().GetCustomAttribute<CommandPrefixAttribute>().prefix.Contains(arg);
+                    if (command && !commands.Contains(commandAvailable))
+                    {
+                        commands.Add(commandAvailable);
+                    }
                 }
             }
-
             return commands;
         }
         public Parser()

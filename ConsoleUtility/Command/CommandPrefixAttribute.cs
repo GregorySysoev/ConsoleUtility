@@ -7,8 +7,8 @@ namespace ConsoleUtility
     )]
     public class CommandPrefixAttribute : Attribute
     {
-        public string prefix { get; set; }
-        public CommandPrefixAttribute(string prefix)
+        public string[] prefix { get; set; }
+        public CommandPrefixAttribute(string[] prefix)
         {
             this.prefix = prefix;
         }
@@ -18,6 +18,4 @@ namespace ConsoleUtility
 
         }
     }
-
-
 }

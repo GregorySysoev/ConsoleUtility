@@ -1,9 +1,10 @@
 using ConsoleUtility;
 namespace ConsoleUtility
 {
-    [CommandPrefix("--help")]
-    [CommandPrefix("-?")]
+    [CommandPrefix(new string[] { "-?", "--help" })]
+    // [CommandPrefix("-?")]
     public class HelpCommand : ICommand
     {
+
     }
 }
