@@ -18,6 +18,7 @@ namespace ConsoleUtility
                 resultCommands.Add(new ErrorCommand());
                 return resultCommands;
             }
+
             var commandAvailableList = GetCommandsAvailableList();
             bool wasError = false;
             for (int i = 0, j = 0; j < commandAvailableList.Count & !wasError; j++)
@@ -43,6 +44,11 @@ namespace ConsoleUtility
                         break;
                     }
 
+                    if (!resultCommands.Contains(commandAvailableList[j]))
+                    {
+                        break;
+                    }
+
                     if (resultCommands.Count != 0)
                     {
                         if (resultCommands.Last().GetType().GetProperty("Value") != null)
@@ -51,6 +57,14 @@ namespace ConsoleUtility
                             PropertyInfo property = commandWithValue.GetProperty("Value");
                             Type propertyType = property.PropertyType;
 
+                            try
+                            {
+                                Convert.ChangeType(args[i], propertyType);
+                            }
+                            catch (Exception)
+                            {
+                                break;
+                            }
                             property.SetValue(resultCommands.Last(), Convert.ChangeType(args[i], propertyType));
                             break;
                         }

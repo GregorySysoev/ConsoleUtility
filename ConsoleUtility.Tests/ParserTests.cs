@@ -47,5 +47,19 @@ namespace ConsoleUtility.Tests
                 Assert.True(item is ICommand);
             }
         }
+
+        [Theory]
+        [InlineData("--thread", "2")]
+        public void Parse_ThreadWithArg_ThreadWithArg(params string[] args)
+        {
+            ConsoleWriter cw = new ConsoleWriter();
+
+            Manager manager = new Manager(cw);
+            manager.IdentifyCommand(args);
+            foreach (var item in manager._command)
+            {
+                Assert.True(item is ICommand);
+            }
+        }
     }
 }
