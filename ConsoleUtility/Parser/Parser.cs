@@ -10,8 +10,31 @@ namespace ConsoleUtility
     public class Parser
     {
         private bool _wasError = false;
+        private List<string> _attributesOfCommandsList = new List<String>();
+        private List<ICommand> _commandAvailableList = new List<ICommand>();
+
+
         public List<ICommand> resultCommands = new List<ICommand>();
 
+
+
+
+        public void GetAttributesOfCommandsList()
+        {
+            var assembly = typeof(ICommand).Assembly;
+            var types = assembly.GetTypes()
+                .Where(x => typeof(ICommand).IsAssignableFrom(x) && !x.IsInterface);
+
+            foreach (var type in types)
+            {
+                var a = type.GetType().GetCustomAttribute<CommandPrefixAttribute>();
+                if (a == null)
+                {
+                    continue;
+                }
+                _attributesOfCommandsList.AddRange(a.prefix.ToList());
+            }
+        }
         public List<ICommand> GetCommandsAvailableList()
         {
             var assembly = typeof(ICommand).Assembly;
@@ -22,12 +45,7 @@ namespace ConsoleUtility
 
             return types;
         }
-
-        public Parser()
-        {
-
-        }
-        public void setValueToCommand(string arg)
+        public void SetValueToCommand(string arg)
         {
             if (resultCommands.Last().GetType().GetProperty("Value") != null)
             {
@@ -50,7 +68,7 @@ namespace ConsoleUtility
                 _wasError = true;
             }
         }
-        public bool compareCommandsInListAndArgs(ICommand command, string arg)
+        public bool CompareCommandsInListAndArgs(ICommand command, string arg)
         {
             bool commandDecided = command
                        .GetType()
@@ -60,57 +78,51 @@ namespace ConsoleUtility
 
             return commandDecided;
         }
+
+        public ICommand SelectCommandByArg(string arg)
+        {
+            foreach (var command in _commandAvailableList)
+            {
+                if (arg.Equals(command.GetType().GetCustomAttribute<CommandPrefixAttribute>().prefix))
+                {
+                    return command;
+                }
+            }
+            return null;
+        }
+        public Parser()
+        {
+            GetAttributesOfCommandsList();
+            _commandAvailableList = GetCommandsAvailableList();
+        }
         public List<ICommand> Parse(string[] args)
         {
-            if (args == null)
+            if (args == null || _commandAvailableList.Count == 0)
             {
                 resultCommands.Add(new ErrorCommand());
                 return resultCommands;
             }
 
-            var commandAvailableList = GetCommandsAvailableList();
-            int i = 0, j = 0, nextArgIndex = 0;
-
-            for (j = 0; (j < commandAvailableList.Count) && (resultCommands.Count < args.Length) && (!_wasError); j++)
+            for (int i = 0; i < args.Length && !_wasError; i++)
             {
-                if (commandAvailableList[j].GetType().GetCustomAttribute<CommandPrefixAttribute>() == null)
+                if (_attributesOfCommandsList.Contains(args[i]))
                 {
+                    var com = SelectCommandByArg(args[i]);
+                    if (!resultCommands.Contains(com))
+                    {
+                        resultCommands.Add(com);
+                    }
                     continue;
                 }
 
-                for (i = 0; i < args.Length; i++)
-                {
-                    if (compareCommandsInListAndArgs(commandAvailableList[j], args[i]))
-                    {
-                        if (!resultCommands.Contains(commandAvailableList[j]))
-                        {
-                            resultCommands.Add(commandAvailableList[j]);
-                        }
-                        break;
-                    }
-
-                    if (resultCommands.Count != 0)
-                    {
-                        setValueToCommand(args[i]);
-                        break;
-                    }
-                }
-            }
-
-            if ((i < args.Length - 1))
-            {
                 if (resultCommands.Count != 0)
                 {
-                    setValueToCommand(args[++i]);
+                    SetValueToCommand(args[i]);
                 }
-            }
-
-            if ((_wasError == true) | (resultCommands.Count == 0))
-            {
-                return new List<ICommand>()
-                    {
-                        new ErrorCommand()
-                    };
+                else
+                {
+                    _wasError = true;
+                }
             }
             return resultCommands;
         }
