@@ -8,7 +8,7 @@ namespace ConsoleUtility
         public string Value { get; set; }
         public SearchCommand()
         {
-
+            Value = "";
         }
     }
 }

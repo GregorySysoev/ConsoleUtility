@@ -14,15 +14,6 @@ namespace ConsoleUtility
         }
         public void Execute()
         {
-            foreach (var command in _commands)
-            {
-                switch (command)
-                {
-                    case ErrorCommand error:
-                        Console.WriteLine("wasError");
-                        break;
-                }
-            }
         }
     }
 }

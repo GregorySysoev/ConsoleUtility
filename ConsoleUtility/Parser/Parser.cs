@@ -10,94 +10,63 @@ namespace ConsoleUtility
     public class Parser
     {
         private bool _wasError = false;
-        private List<string> _attributesOfCommandsList = new List<String>();
-        private List<ICommand> _commandAvailableList = new List<ICommand>();
-
-
+        private Dictionary<string[], Type> commandsWithAttributes = new Dictionary<string[], Type>();
         public List<ICommand> resultCommands = new List<ICommand>();
 
-
-
-
-        public void GetAttributesOfCommandsList()
-        {
-            foreach (var command in _commandAvailableList)
-            {
-                var a = command.GetType().GetCustomAttribute<CommandPrefixAttribute>();
-                if (a != null)
-                {
-                    _attributesOfCommandsList.AddRange(a.prefix.ToList());
-                }
-            }
-        }
-        public List<ICommand> GetCommandsAvailableList()
+        public void GetCommandsWithAttributes()
         {
             var assembly = typeof(ICommand).Assembly;
             var types = assembly.GetTypes()
-                .Where(x => typeof(ICommand).IsAssignableFrom(x) && !x.IsInterface)
-                .Select(c => (ICommand)Activator.CreateInstance(c))
-                .ToList();
+                .Where(x => typeof(ICommand).IsAssignableFrom(x) && !x.IsInterface);
 
-            return types;
-        }
-        public void SetValueToCommand(string arg)
-        {
-            if (resultCommands.Last().GetType().GetProperty("Value") != null)
+            foreach (var type in types)
             {
-                Type commandWithValue = resultCommands.Last().GetType();
-                PropertyInfo property = commandWithValue.GetProperty("Value");
+                if (type.GetCustomAttribute<CommandPrefixAttribute>() != null)
+                {
+                    commandsWithAttributes.Add(type.GetCustomAttribute<CommandPrefixAttribute>().prefix, type);
+                }
+            }
+        }
+        public void SetValueToCommand(string arg, ICommand command)
+        {
+            Type commandWithValue = command.GetType();
+            PropertyInfo property = commandWithValue.GetProperty("Value");
+            if (property != null)
+            {
                 Type propertyType = property.PropertyType;
-
                 try
                 {
-                    Convert.ChangeType(arg, propertyType);
+                    var a = Convert.ChangeType(arg, propertyType);
+                    property.SetValue(resultCommands.Last(), a);
                 }
                 catch (Exception)
                 {
                     _wasError = true;
                 }
-                property.SetValue(resultCommands.Last(), Convert.ChangeType(arg, propertyType));
             }
             else
             {
                 _wasError = true;
             }
         }
-        public bool CompareCommandsInListAndArgs(ICommand command, string arg)
+        public ICommand FindCommandUsingAttribute(string attr)
         {
-            bool commandDecided = command
-                       .GetType()
-                       .GetCustomAttribute<CommandPrefixAttribute>()
-                       .prefix
-                       .Contains(arg);
-
-            return commandDecided;
-        }
-
-        public ICommand SelectCommandByArg(string arg)
-        {
-            foreach (var command in _commandAvailableList)
+            foreach (var element in commandsWithAttributes)
             {
-                if (command.GetType().GetCustomAttribute<CommandPrefixAttribute>() == null)
+                if (element.Key.Contains(attr))
                 {
-                    continue;
-                }
-
-                if (command.GetType().GetCustomAttribute<CommandPrefixAttribute>().prefix.Contains(arg))
-                {
-                    return command;
+                    return (ICommand)Activator.CreateInstance(element.Value);
                 }
             }
             return null;
         }
         public Parser()
         {
-            _commandAvailableList = GetCommandsAvailableList();
-            GetAttributesOfCommandsList();
+            GetCommandsWithAttributes();
         }
         public List<ICommand> Parse(string[] args)
         {
-            if (args == null || _commandAvailableList.Count == 0)
+            if (args == null || commandsWithAttributes.Count == 0)
             {
                 resultCommands.Add(new ErrorCommand());
                 return resultCommands;
@@ -105,19 +74,15 @@ namespace ConsoleUtility
 
             for (int i = 0; i < args.Length && !_wasError; i++)
             {
-                if (_attributesOfCommandsList.Contains(args[i]))
+                if (FindCommandUsingAttribute(args[i]) is ICommand command)
                 {
-                    var com = SelectCommandByArg(args[i]);
-                    if (!resultCommands.Contains(com))
-                    {
-                        resultCommands.Add(com);
-                    }
+                    resultCommands.Add(command);
                     continue;
                 }
 
-                if (resultCommands.Count != 0)
+                if (resultCommands.Count != 0 && i != args.Length)
                 {
-                    SetValueToCommand(args[i]);
+                    SetValueToCommand(args[i], resultCommands.Last());
                 }
                 else
                 {
