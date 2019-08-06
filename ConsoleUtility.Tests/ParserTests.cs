@@ -51,6 +51,7 @@ namespace ConsoleUtility.Tests
 
         [Theory]
         [InlineData("--thread", "2")]
+        [InlineData("--thread", "2", "4")]
         public void Parse_ThreadWithArg_ThreadWithArg(params string[] args)
         {
             ConsoleWriter cw = new ConsoleWriter();
@@ -103,6 +104,21 @@ namespace ConsoleUtility.Tests
             foreach (var item in manager._command)
             {
                 manager._command.ForEach(x => x.ShouldBeOfType<ErrorCommand>());
+            }
+        }
+
+        [Theory]
+        [InlineData("--search", "искомая строка", "-?")]
+        [InlineData("-t", "4", "--search", "искомая строка", "-?")]
+        public void Parse_FewArgs_Commands(params string[] args)
+        {
+            ConsoleWriter cw = new ConsoleWriter();
+
+            Manager manager = new Manager(cw);
+            manager.IdentifyCommand(args);
+            foreach (var item in manager._command)
+            {
+                Assert.True(item is SearchCommand);
             }
         }
     }
