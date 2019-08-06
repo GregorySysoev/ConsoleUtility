@@ -1,3 +1,4 @@
+using System;
 using ConsoleUtility;
 using System.Collections.Generic;
 namespace ConsoleUtility
@@ -13,6 +14,15 @@ namespace ConsoleUtility
         }
         public void Execute()
         {
+            foreach (var command in _commands)
+            {
+                switch (command)
+                {
+                    case ErrorCommand error:
+                        Console.WriteLine("wasError");
+                        break;
+                }
+            }
         }
     }
 }

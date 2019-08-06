@@ -94,8 +94,7 @@ namespace ConsoleUtility.Tests
 
         [Theory]
         [InlineData("--search", "искомая строка", "BadArg")]
-        [InlineData("BadArg", "--search", "искомая строка")]
-        public void Parse_SearchWithStringAndBadArg_ErrorCommand(params string[] args)
+        public void Parse_SearchWithFewString_SearchCommand(params string[] args)
         {
             ConsoleWriter cw = new ConsoleWriter();
 
@@ -103,7 +102,7 @@ namespace ConsoleUtility.Tests
             manager.IdentifyCommand(args);
             foreach (var item in manager._command)
             {
-                manager._command.ForEach(x => x.ShouldBeOfType<ErrorCommand>());
+                manager._command.ForEach(x => x.ShouldBeOfType<SearchCommand>());
             }
         }
 
@@ -118,7 +117,7 @@ namespace ConsoleUtility.Tests
             manager.IdentifyCommand(args);
             foreach (var item in manager._command)
             {
-                Assert.True(item is SearchCommand);
+                Assert.True(!(item is ErrorCommand));
             }
         }
     }

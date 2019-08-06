@@ -21,18 +21,13 @@ namespace ConsoleUtility
 
         public void GetAttributesOfCommandsList()
         {
-            var assembly = typeof(ICommand).Assembly;
-            var types = assembly.GetTypes()
-                .Where(x => typeof(ICommand).IsAssignableFrom(x) && !x.IsInterface);
-
-            foreach (var type in types)
+            foreach (var command in _commandAvailableList)
             {
-                var a = type.GetType().GetCustomAttribute<CommandPrefixAttribute>();
-                if (a == null)
+                var a = command.GetType().GetCustomAttribute<CommandPrefixAttribute>();
+                if (a != null)
                 {
-                    continue;
+                    _attributesOfCommandsList.AddRange(a.prefix.ToList());
                 }
-                _attributesOfCommandsList.AddRange(a.prefix.ToList());
             }
         }
         public List<ICommand> GetCommandsAvailableList()
@@ -83,7 +78,12 @@ namespace ConsoleUtility
         {
             foreach (var command in _commandAvailableList)
             {
-                if (arg.Equals(command.GetType().GetCustomAttribute<CommandPrefixAttribute>().prefix))
+                if (command.GetType().GetCustomAttribute<CommandPrefixAttribute>() == null)
+                {
+                    continue;
+                }
+
+                if (command.GetType().GetCustomAttribute<CommandPrefixAttribute>().prefix.Contains(arg))
                 {
                     return command;
                 }
@@ -92,8 +92,8 @@ namespace ConsoleUtility
         }
         public Parser()
         {
-            GetAttributesOfCommandsList();
             _commandAvailableList = GetCommandsAvailableList();
+            GetAttributesOfCommandsList();
         }
         public List<ICommand> Parse(string[] args)
         {
@@ -123,6 +123,10 @@ namespace ConsoleUtility
                 {
                     _wasError = true;
                 }
+            }
+            if (_wasError)
+            {
+                resultCommands = new List<ICommand>() { new ErrorCommand() };
             }
             return resultCommands;
         }
