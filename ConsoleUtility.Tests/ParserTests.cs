@@ -22,6 +22,7 @@ namespace ConsoleUtility.Tests
         [Theory]
         [InlineData("-?")]
         [InlineData("--help")]
+        [InlineData("--help", "-?")]
         public void Parse_Help_HelpCommand(params string[] args)
         {
             ConsoleWriter cw = new ConsoleWriter();
@@ -59,6 +60,49 @@ namespace ConsoleUtility.Tests
             foreach (var item in manager._command)
             {
                 Assert.True(item is ThreadSelectCommand);
+            }
+        }
+
+        [Theory]
+        [InlineData("--help", "2")]
+        public void Parse_HelpWithValue_ErrorCommand(params string[] args)
+        {
+            ConsoleWriter cw = new ConsoleWriter();
+
+            Manager manager = new Manager(cw);
+            manager.IdentifyCommand(args);
+            foreach (var item in manager._command)
+            {
+                Assert.True(item is ErrorCommand);
+            }
+        }
+
+        [Theory]
+        [InlineData("--search", "искомая строка")]
+        public void Parse_SearchWithString_SearchWithString(params string[] args)
+        {
+            ConsoleWriter cw = new ConsoleWriter();
+
+            Manager manager = new Manager(cw);
+            manager.IdentifyCommand(args);
+            foreach (var item in manager._command)
+            {
+                Assert.True(item is SearchCommand);
+            }
+        }
+
+        [Theory]
+        [InlineData("--search", "искомая строка", "BadArg")]
+        [InlineData("BadArg", "--search", "искомая строка")]
+        public void Parse_SearchWithStringAndBadArg_ErrorCommand(params string[] args)
+        {
+            ConsoleWriter cw = new ConsoleWriter();
+
+            Manager manager = new Manager(cw);
+            manager.IdentifyCommand(args);
+            foreach (var item in manager._command)
+            {
+                manager._command.ForEach(x => x.ShouldBeOfType<ErrorCommand>());
             }
         }
     }
