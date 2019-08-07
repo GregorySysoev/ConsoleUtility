@@ -2,26 +2,24 @@ using ConsoleUtility;
 using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace ConsoleUtility
 {
     public class Finder
     {
-        private string _stringToSearch;
-        public Finder(string stringToSearch)
-        {
-            _stringToSearch = stringToSearch;
-        }
-        public void FindInFile()
+
+        public Finder(string stringToSearch,
+                        string pathToFind,
+                        List<ICommand> commands,
+                        int countOfThreads)
         {
 
         }
+
         public async void Find(string pathToFile, List<ICommand> commands)
         {
-            string currentString = "";
-            using (StreamWriter fs = new StreamWriter(pathToFile))
-            {
-            }
+
         }
     }
 }

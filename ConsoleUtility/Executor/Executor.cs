@@ -2,6 +2,7 @@ using System;
 using ConsoleUtility;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 
 namespace ConsoleUtility
 {
@@ -16,9 +17,9 @@ namespace ConsoleUtility
         }
         public void Execute()
         {
-            int countOffThreads = 1;
+            int countOfThreads = 1;
             string stringToSearch = "";
-            string path = System.Environment.CurrentDirectory;
+            string pathToFind = System.Environment.CurrentDirectory;
 
             bool help = false;
             bool error = false;
@@ -35,7 +36,7 @@ namespace ConsoleUtility
                         break;
                     case ThreadSelectCommand threadCount:
                         _commands.Remove(threadCount);
-                        countOffThreads = threadCount.Value;
+                        countOfThreads = threadCount.Value;
                         break;
                     case SearchCommand search:
                         _commands.Remove(search);
@@ -49,13 +50,23 @@ namespace ConsoleUtility
             if (stringToSearch == "")
             {
                 return;
-            } //error
+            }
+            if (error)
+            {
+                return;
+            }
+            if (help)
+            {
+                return;
+            }
+
             //TODO решить что делать с help и error
 
             _commands.Add(new LineFoundSearchCommand());
             _commands.Add(new TimeCommand());
+            _commands.Add(new PathToFileCommand());
 
-            Finder finder = new Finder(stringToSearch);
+            Finder finder = new Finder(stringToSearch, pathToFind, _commands, countOfThreads);
         }
     }
 }

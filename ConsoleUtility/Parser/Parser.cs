@@ -94,7 +94,7 @@ namespace ConsoleUtility
                 resultCommands = new List<ICommand>() { new ErrorCommand() };
             }
 
-            resultCommands.Distinct();
+            resultCommands.Distinct(new CommandTypeComparer());
             return resultCommands;
         }
     }
