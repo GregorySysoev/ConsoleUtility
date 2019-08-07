@@ -1,0 +1,18 @@
+@startuml FindProcess
+manager -> executor : Commands
+executor -> Execute
+Execute -> Execute : Read commands and set defaults settings
+Execute -> Execute : set Count of threads
+Execute -> Execute : set search to find
+Execute -> Execute : Read another commands
+Execute -> Error
+Execute -> Help
+newpage Find strings
+Execute -> Execute : Create threads
+Execute -> finder : Commands
+finder -> FindInfile 
+FindInfile -> finder : result of search {line: xx, thread №: yy, time: zz and another}
+newpage Return result
+finder -> executor
+executor -> Print : result that depends on commands
+@enduml

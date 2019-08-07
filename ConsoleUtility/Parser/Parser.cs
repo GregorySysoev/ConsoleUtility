@@ -93,6 +93,8 @@ namespace ConsoleUtility
             {
                 resultCommands = new List<ICommand>() { new ErrorCommand() };
             }
+
+            resultCommands.Distinct();
             return resultCommands;
         }
     }
