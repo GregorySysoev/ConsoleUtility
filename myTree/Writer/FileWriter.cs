@@ -1,23 +1,29 @@
 using myTree;
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace myTree
 {
     public class FileWriter : IWriter
     {
-        private List<string> _listOfFiles = new List<string>();
+        public ConcurrentQueue<string> listOfFilesConcurentQueue = new ConcurrentQueue<string>();
+
         public void Write(string text)
         {
-            throw new System.NotImplementedException();
+            Console.WriteLine(new System.NotImplementedException().Message);
         }
 
-        public void Write(string prefix, FileSystemInfo info, string suffix)
+        public async void Write(string prefix, FileSystemInfo info, string suffix)
         {
             if (info is FileInfo fInfo)
             {
-                _listOfFiles.Add(fInfo.FullName);
+                await Task.Run(() =>
+                {
+                    listOfFilesConcurentQueue.Enqueue(fInfo.FullName);
+                });
             }
         }
     }

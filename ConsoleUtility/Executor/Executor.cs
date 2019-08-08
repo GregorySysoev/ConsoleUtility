@@ -62,9 +62,9 @@ namespace ConsoleUtility
 
             //TODO решить что делать с help и error
 
-            _commands.Add(new LineFoundSearchCommand());
-            _commands.Add(new TimeCommand());
-            _commands.Add(new PathToFileCommand());
+            // _commands.Add(new LineFoundSearchCommand());
+            // _commands.Add(new TimeCommand());
+            // _commands.Add(new PathToFileCommand());
 
             Finder finder = new Finder(stringToSearch, pathToFind, _commands, countOfThreads);
         }
