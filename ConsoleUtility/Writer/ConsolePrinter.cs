@@ -2,9 +2,9 @@ using System;
 
 namespace ConsoleUtility
 {
-    public class ConsoleWriter : IWriter
+    public class ConsolePrinter : IPrinter
     {
-        public void Write(string text)
+        public void Print(string text)
         {
             Console.WriteLine(text);
         }

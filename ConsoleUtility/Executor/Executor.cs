@@ -9,11 +9,11 @@ namespace ConsoleUtility
     public class Executor
     {
         private List<ICommand> _commands;
-        private IWriter _writer;
-        public Executor(List<ICommand> commands, IWriter writer)
+        private IPrinter _printer;
+        public Executor(List<ICommand> commands, IPrinter printer)
         {
             _commands = commands;
-            _writer = writer;
+            _printer = printer;
         }
         public void Execute()
         {
@@ -66,7 +66,10 @@ namespace ConsoleUtility
             // _commands.Add(new TimeCommand());
             // _commands.Add(new PathToFileCommand());
 
+
             Finder finder = new Finder(stringToSearch, pathToFind, _commands, countOfThreads);
+            finder.FindAndPrint(_printer);
+
         }
     }
 }

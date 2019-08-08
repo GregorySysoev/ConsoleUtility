@@ -15,18 +15,31 @@ namespace ConsoleUtility
         private List<ICommand> _commands;
         private int _countOfThreads;
         private string _pathToFind;
-        public void getPathToFilesList()
+        public void GetPathToFilesList()
         {
             _filesList = new myTree.FileWriter();
             Algorithm algorithm = new Algorithm(new string[] { }, _filesList, _pathToFind);
             algorithm.Execute();
         }
-        public string findStringInFile(string filePath)
+        public List<int> FindStringInFile(string filePath)
         {
-            Thread t = Thread.CurrentThread;
-            string pathToFile;
-            _filesList.listOfFilesConcurentQueue.TryDequeue(out pathToFile);
-            return "";
+            StreamReader file = new StreamReader(filePath);
+            int line = 1;
+            string currentString = "";
+            List<int> result = new List<int>();
+            while ((currentString = file.ReadLine()) != null)
+            {
+                if (currentString.Contains(_stringToSearch))
+                {
+                    result.Add(line);
+                }
+                line++;
+            }
+            // Thread t = Thread.CurrentThread;
+            // string pathToFile;
+            // _filesList.listOfFilesConcurentQueue.TryDequeue(out pathToFile);
+
+            return result;
         }
         public Finder(string stringToSearch,
                         string pathToFind,
@@ -37,15 +50,26 @@ namespace ConsoleUtility
             _countOfThreads = countOfThreads;
             _commands = commands;
             _stringToSearch = stringToSearch;
+            GetPathToFilesList();
         }
 
 
-        public void Find(string pathToFile, List<ICommand> commands)
+        public void FindAndPrint(IPrinter printer)
         {
-            Thread threadThatFindFiles = new Thread(new ThreadStart(getPathToFilesList));
-            Thread[] threadsThatFindStringInFiles = new Thread[_countOfThreads];
-            for (int i = 0; i < _countOfThreads; i++)
+            // Thread threadThatFindFiles = new Thread(new ThreadStart(GetPathToFilesList));
+            // Thread[] threadsThatFindStringInFiles = new Thread[_countOfThreads];
+            // for (int i = 0; i < _countOfThreads; i++)
+            // {
+            // }
+            foreach (var file in _filesList.listOfFilesConcurentQueue)
             {
+                if (FindStringInFile(file) is List<int> result)
+                {
+                    foreach (var res in result)
+                    {
+                        printer.Print(file + " " + res.ToString());
+                    }
+                }
             }
         }
     }

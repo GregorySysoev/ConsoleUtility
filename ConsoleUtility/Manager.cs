@@ -5,10 +5,10 @@ namespace ConsoleUtility
     public class Manager
     {
         public List<ICommand> _command;
-        private IWriter _writer;
+        private IPrinter _printer;
         public void RunCommands()
         {
-            Executor executor = new Executor(_command, _writer);
+            Executor executor = new Executor(_command, _printer);
             executor.Execute();
         }
         public void IdentifyCommand(string[] argumentsOfCommandLine)
@@ -16,9 +16,9 @@ namespace ConsoleUtility
             var parser = new Parser();
             _command = parser.Parse(argumentsOfCommandLine);
         }
-        public Manager(IWriter writer)
+        public Manager(IPrinter printer)
         {
-            _writer = writer;
+            _printer = printer;
         }
     }
 }
