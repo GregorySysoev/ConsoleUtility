@@ -7,26 +7,39 @@ using System.Threading;
 using System.Threading.Tasks;
 using myTree;
 using System.Diagnostics;
+using System.Text;
 
 namespace ConsoleUtility
 {
+    public struct InfoFromSearch
+    {
+        public int Line { get; }
+        public long Time { get; }
+        public string Path { get; }
+        public int ThreadId { get; }
+        public InfoFromSearch(int line, long time, string path, int threadId)
+        {
+            Line = line;
+            Time = time;
+            Path = path;
+            ThreadId = threadId;
+        }
+    }
     public class Finder
     {
         private IPrinter _printer;
         private int _countOfThreads;
         private string _stringToSearch;
         private List<ICommand> _commands;
-        private bool _filesEnds = false;
-        private ConcurrentQueue<string> _infoToPrint;
+        private ConcurrentQueue<InfoFromSearch> _infoToPrint;
         private myTree.FileWriter _filesList;
         private string _pathToFind;
         public void GetPathToFilesList()
         {
             Algorithm algorithm = new Algorithm(new string[] { }, _filesList, _pathToFind);
             algorithm.Execute();
-            _filesEnds = true;
         }
-        public Dictionary<int, long> FindStringInFile(string filePath)
+        public void FindStringInFile(string filePath)
         {
             long nanosecPerTick = (1000L * 1000L * 1000L) / Stopwatch.Frequency;
             StreamReader file;
@@ -36,22 +49,25 @@ namespace ConsoleUtility
             }
             catch
             {
-                return null;
+                return;
             }
             var sw = new Stopwatch();
             int line = 1;
             string currentString = "";
-            Dictionary<int, long> result = new Dictionary<int, long>();
             sw.Start();
             while ((currentString = file.ReadLine()) != null)
             {
                 if (currentString.Contains(_stringToSearch))
                 {
-                    result.Add(line, nanosecPerTick * sw.ElapsedTicks);
+                    _infoToPrint.Enqueue(new InfoFromSearch(
+                        line,
+                        nanosecPerTick * sw.ElapsedTicks,
+                        filePath,
+                        Thread.CurrentThread.ManagedThreadId
+                    ));
                 }
                 line++;
             }
-            return result;
         }
         public Finder(string stringToSearch,
                         string pathToFind,
@@ -60,7 +76,7 @@ namespace ConsoleUtility
                         IPrinter printer)
         {
             _filesList = new FileWriter();
-            _infoToPrint = new ConcurrentQueue<string>();
+            _infoToPrint = new ConcurrentQueue<InfoFromSearch>();
             _pathToFind = pathToFind;
             _countOfThreads = countOfThreads;
             _commands = commands;
@@ -68,19 +84,13 @@ namespace ConsoleUtility
             _printer = printer;
         }
 
-        public void FindAndPrint()
+        public void FindAndAfterPrint()
         {
-            while (_filesEnds)
+            while (true)
             {
-                while (_filesList.listOfFilesConcurentQueue.TryDequeue(out string filePath))
+                if (_filesList.listOfFilesConcurentQueue.TryDequeue(out string filePath))
                 {
-                    if ((FindStringInFile(filePath) is Dictionary<int, long> result))
-                    {
-                        foreach (var res in result)
-                        {
-                            _infoToPrint.Enqueue($"{filePath} line={res.Key} time={res.Value} thread={Thread.CurrentThread.ManagedThreadId}");
-                        }
-                    }
+                    FindStringInFile(filePath);
                 }
             }
         }
@@ -89,9 +99,14 @@ namespace ConsoleUtility
         {
             while (true)
             {
-                if (_infoToPrint.TryDequeue(out string informationAboutSearch))
+                if (_infoToPrint.TryDequeue(out InfoFromSearch res))
                 {
-                    _printer.Print(informationAboutSearch);
+                    StringBuilder str = new StringBuilder();
+                    str.Append($"{res.Path.Replace(_pathToFind, "")} ");
+                    str.Append($"line = {res.Line} ");
+                    str.Append($"time = {res.Time} ");
+                    str.Append($"thread = {res.ThreadId} ");
+                    Console.WriteLine(str);
                 }
             }
         }
@@ -99,14 +114,14 @@ namespace ConsoleUtility
         {
             var producer = new Thread(GetPathToFilesList);
             producer.Start();
+            var printer = new Thread(PrintInfo);
+            printer.Start();
             var consumers = new Thread[_countOfThreads];
             for (int i = 0; i < _countOfThreads; i++)
             {
-                consumers[i] = new Thread(FindAndPrint);
+                consumers[i] = new Thread(FindAndAfterPrint);
                 consumers[i].Start();
             }
-            var printer = new Thread(PrintInfo);
-            printer.Start();
         }
     }
 }
