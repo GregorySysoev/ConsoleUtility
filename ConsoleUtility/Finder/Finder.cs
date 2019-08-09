@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 using myTree;
+using System.Diagnostics;
 
 namespace ConsoleUtility
 {
@@ -25,8 +26,9 @@ namespace ConsoleUtility
             algorithm.Execute();
             _filesEnds = false;
         }
-        public List<int> FindStringInFile(string filePath)
+        public Dictionary<int, long> FindStringInFile(string filePath)
         {
+            long nanosecPerTick = (1000L * 1000L * 1000L) / Stopwatch.Frequency;
             StreamReader file;
             try
             {
@@ -36,15 +38,19 @@ namespace ConsoleUtility
             {
                 return null;
             }
-
+            var sw = new Stopwatch();
             int line = 1;
             string currentString = "";
-            List<int> result = new List<int>();
+            Dictionary<int, long> result = new Dictionary<int, long>();
+            sw.Start();
             while ((currentString = file.ReadLine()) != null)
             {
+
                 if (currentString.Contains(_stringToSearch))
                 {
-                    result.Add(line);
+                    sw.Stop();
+                    result.Add(line, nanosecPerTick * sw.ElapsedTicks);
+                    sw.Start();
                 }
                 line++;
             }
@@ -63,19 +69,22 @@ namespace ConsoleUtility
             _printer = printer;
         }
 
-
         public void FindAndPrint()
         {
+            var cc = new Stopwatch();
+            cc.Start();
             while (_filesList.listOfFilesConcurentQueue.TryDequeue(out string filePath) || _filesEnds)
             {
-                if ((FindStringInFile(filePath) is List<int> result))
+                if ((FindStringInFile(filePath) is Dictionary<int, long> result))
                 {
                     foreach (var res in result)
                     {
-                        _printer.Print(filePath + " " + res.ToString());
+                        _printer.Print($"{filePath} line={res.Key} time={res.Value} Task={Task.CurrentId}");
                     }
                 }
             }
+            cc.Stop();
+            Console.WriteLine($"time of executing {cc.ElapsedTicks}");
         }
 
         public void Find()
