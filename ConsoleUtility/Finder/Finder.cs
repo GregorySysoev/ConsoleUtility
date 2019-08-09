@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using myTree;
 using System.Diagnostics;
 using System.Text;
+using System.Reflection;
 
 namespace ConsoleUtility
 {
@@ -34,9 +35,33 @@ namespace ConsoleUtility
         private ConcurrentQueue<InfoFromSearch> _infoToPrint;
         private myTree.FileWriter _filesList;
         private string _pathToFind;
+
+        private void GetCommandAndAttribute(ICommandFindInTreeType commandTreeType, out string commandName, out string atr)
+        {
+            var com = commandTreeType.GetType();
+            commandName = com.GetCustomAttribute<CommandPrefixAttribute>().prefix[0];
+            atr = "";
+            PropertyInfo property = com.GetProperty("Value");
+            if (property != null)
+            {
+                atr = (string)property.GetValue(commandTreeType);
+            }
+        }
         public void GetPathToFilesList()
         {
-            Algorithm algorithm = new Algorithm(new string[] { }, _filesList, _pathToFind);
+            List<string> arguments = new List<string>();
+            foreach (var item in _commands)
+            {
+                if (item is ICommandFindInTreeType)
+                {
+                    GetCommandAndAttribute((ICommandFindInTreeType)item, out string nameOfCommand, out string attrOfCommand);
+                    arguments.Add(nameOfCommand);
+                    arguments.Add(attrOfCommand);
+                    _commands.Remove(item);
+                }
+            }
+            string[] args = arguments.ToArray();
+            Algorithm algorithm = new Algorithm(args, _filesList, _pathToFind);
             algorithm.Execute();
         }
         public void FindStringInFile(string filePath)
