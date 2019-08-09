@@ -106,7 +106,7 @@ namespace ConsoleUtility
                     str.Append($"line = {res.Line} ");
                     str.Append($"time = {res.Time} ");
                     str.Append($"thread = {res.ThreadId} ");
-                    Console.WriteLine(str);
+                    _printer.Print(str.ToString());
                 }
             }
         }

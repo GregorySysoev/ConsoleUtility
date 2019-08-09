@@ -51,28 +51,30 @@ namespace ConsoleUtility
 
             if (error)
             {
-                Console.WriteLine("Произошла ошибка: некорректно введены аргументы");
-                return;
-            }
-            if (stringToSearch == "")
-            {
-                Console.WriteLine("Искомая строка не указана, используйте -s \"искомая строка\"");
-                return;
-            }
-            if (help)
-            {
-                Console.WriteLine("");
-                Console.WriteLine("Список доступных команд:");
-                Console.WriteLine("-t --thread [число] - установить кол-во потоков");
-                Console.WriteLine("-s --search [\"строка\"] - установить строку для поиска. Обязательная комадна");
-                Console.WriteLine("-? --help - помощь");
-                Console.WriteLine("");
-                Console.WriteLine("Пример использования");
-                Console.WriteLine("dotnet ConsoleUtility.dll -t 2 --search \"public class Program\"");
-                Console.WriteLine("");
+                _printer.Print("Произошла ошибка: некорректно введены аргументы");
+                _printer.Print("Введите dotnet ConsoleUtility.dll --help чтобы получить помощь");
                 return;
             }
 
+            if (help)
+            {
+                _printer.Print("");
+                _printer.Print("Список доступных команд:");
+                _printer.Print("-t --thread [число] - установить кол-во потоков");
+                _printer.Print("-s --search [\"строка\"] - установить строку для поиска. Обязательная комадна");
+                _printer.Print("-? --help - помощь");
+                _printer.Print("");
+                _printer.Print("Пример использования");
+                _printer.Print("dotnet ConsoleUtility.dll -t 2 --search \"public class Program\"");
+                _printer.Print("");
+                return;
+            }
+
+            if (stringToSearch == "")
+            {
+                _printer.Print("Искомая строка не указана, используйте -s \"искомая строка\"");
+                return;
+            }
             Finder finder = new Finder(stringToSearch, pathToFind, _commands, countOfThreads, _printer);
             finder.Find();
         }
