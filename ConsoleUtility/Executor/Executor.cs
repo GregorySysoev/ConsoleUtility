@@ -50,12 +50,12 @@ namespace ConsoleUtility
 
             if (error)
             {
-                Console.WriteLine("Произошла ошибка: некорректно ввденные аргументы");
+                Console.WriteLine("Произошла ошибка: некорректно введены аргументы");
                 return;
             }
             if (stringToSearch == "")
             {
-                Console.WriteLine("Искомая строка не введена, используйте -s \"искомая строка\"");
+                Console.WriteLine("Искомая строка не указана, используйте -s \"искомая строка\"");
                 return;
             }
             if (help)
@@ -72,7 +72,6 @@ namespace ConsoleUtility
 
             Finder finder = new Finder(stringToSearch, pathToFind, _commands, countOfThreads, _printer);
             finder.Find();
-
         }
     }
 }

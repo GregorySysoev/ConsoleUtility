@@ -14,7 +14,6 @@ namespace ConsoleUtility
         IPrinter _printer;
         private bool _filesEnds = true;
         private string _stringToSearch;
-        private ConcurrentQueue<String> _pathToFilesList;
         private myTree.FileWriter _filesList;
         private List<ICommand> _commands;
         private int _countOfThreads;
@@ -81,15 +80,13 @@ namespace ConsoleUtility
 
         public void Find()
         {
-            var taskGetFiles = Task.Factory.StartNew(GetPathToFilesList);
-            Thread.Sleep(200);
-
             var tasks = new List<Task>();
-            tasks.Add(taskGetFiles);
             for (int i = 0; i < _countOfThreads; i++)
             {
                 tasks.Add(Task.Factory.StartNew(FindAndPrint));
             }
+            var taskGetFiles = Task.Factory.StartNew(GetPathToFilesList);
+            tasks.Add(taskGetFiles);
             Task.WaitAll(tasks.ToArray());
         }
     }
