@@ -37,10 +37,12 @@ namespace ConsoleUtility
                     case ThreadSelectCommand threadCount:
                         _commands.Remove(threadCount);
                         countOfThreads = threadCount.Value;
+                        i--;
                         break;
                     case SearchCommand search:
-                        _commands.Remove(search);
                         stringToSearch = search.Value;
+                        _commands.Remove(search);
+                        i--;
                         break;
                     default:
                         continue;

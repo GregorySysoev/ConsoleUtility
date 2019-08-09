@@ -71,32 +71,38 @@ namespace ConsoleUtility
 
         public void FindAndPrint()
         {
-            var cc = new Stopwatch();
-            cc.Start();
+            // Не потокобезопасный.
             while (_filesList.listOfFilesConcurentQueue.TryDequeue(out string filePath) || _filesEnds)
             {
                 if ((FindStringInFile(filePath) is Dictionary<int, long> result))
                 {
                     foreach (var res in result)
                     {
-                        _printer.Print($"{filePath} line={res.Key} time={res.Value} Task={Task.CurrentId}");
+                        _printer.Print($"{filePath} line={res.Key} time={res.Value} thread={Thread.CurrentThread.ManagedThreadId}");
                     }
                 }
             }
-            cc.Stop();
-            Console.WriteLine($"time of executing {cc.ElapsedTicks}");
         }
 
         public void Find()
         {
-            var tasks = new List<Task>();
+            var producer = new Task(GetPathToFilesList);
+            producer.Start();
+            var consumers = new Thread[_countOfThreads];
             for (int i = 0; i < _countOfThreads; i++)
             {
-                tasks.Add(Task.Factory.StartNew(FindAndPrint));
+                consumers[i] = new Thread(FindAndPrint);
+                consumers[i].Start();
             }
-            var taskGetFiles = Task.Factory.StartNew(GetPathToFilesList);
-            tasks.Add(taskGetFiles);
-            Task.WaitAll(tasks.ToArray());
+
+            // var tasks = new List<Task>();
+            // for (int i = 0; i < _countOfThreads; i++)
+            // {
+            //     tasks.Add(Task.Factory.StartNew(FindAndPrint));
+            // }
+            // var taskGetFiles = Task.Factory.StartNew(GetPathToFilesList);
+            // tasks.Add(taskGetFiles);
+            // Task.WaitAll(tasks.ToArray());
         }
     }
 }
