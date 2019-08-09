@@ -12,6 +12,7 @@ namespace ConsoleUtility
 {
     public class Finder
     {
+        private ConcurrentQueue<string> _infoToPrint;
         IPrinter _printer;
         private bool _filesEnds = true;
         private string _stringToSearch;
@@ -21,7 +22,6 @@ namespace ConsoleUtility
         private string _pathToFind;
         public void GetPathToFilesList()
         {
-            _filesList = new myTree.FileWriter();
             Algorithm algorithm = new Algorithm(new string[] { }, _filesList, _pathToFind);
             algorithm.Execute();
             _filesEnds = false;
@@ -48,9 +48,7 @@ namespace ConsoleUtility
 
                 if (currentString.Contains(_stringToSearch))
                 {
-                    sw.Stop();
                     result.Add(line, nanosecPerTick * sw.ElapsedTicks);
-                    sw.Start();
                 }
                 line++;
             }
@@ -62,6 +60,8 @@ namespace ConsoleUtility
                         int countOfThreads,
                         IPrinter printer)
         {
+            _filesList = new FileWriter();
+            _infoToPrint = new ConcurrentQueue<string>();
             _pathToFind = pathToFind;
             _countOfThreads = countOfThreads;
             _commands = commands;
@@ -71,22 +71,29 @@ namespace ConsoleUtility
 
         public void FindAndPrint()
         {
-            // Не потокобезопасный.
             while (_filesList.listOfFilesConcurentQueue.TryDequeue(out string filePath) || _filesEnds)
             {
                 if ((FindStringInFile(filePath) is Dictionary<int, long> result))
                 {
                     foreach (var res in result)
                     {
-                        _printer.Print($"{filePath} line={res.Key} time={res.Value} thread={Thread.CurrentThread.ManagedThreadId}");
+                        _infoToPrint.Enqueue($"{filePath} line={res.Key} time={res.Value} thread={Thread.CurrentThread.ManagedThreadId}");
                     }
                 }
             }
         }
 
+        public void PrintInfo()
+        {
+            Thread.Sleep(5000);
+            while (_infoToPrint.TryDequeue(out string informationAboutSearch))
+            {
+                _printer.Print(informationAboutSearch);
+            }
+        }
         public void Find()
         {
-            var producer = new Task(GetPathToFilesList);
+            var producer = new Thread(GetPathToFilesList);
             producer.Start();
             var consumers = new Thread[_countOfThreads];
             for (int i = 0; i < _countOfThreads; i++)
@@ -94,15 +101,8 @@ namespace ConsoleUtility
                 consumers[i] = new Thread(FindAndPrint);
                 consumers[i].Start();
             }
-
-            // var tasks = new List<Task>();
-            // for (int i = 0; i < _countOfThreads; i++)
-            // {
-            //     tasks.Add(Task.Factory.StartNew(FindAndPrint));
-            // }
-            // var taskGetFiles = Task.Factory.StartNew(GetPathToFilesList);
-            // tasks.Add(taskGetFiles);
-            // Task.WaitAll(tasks.ToArray());
+            var printer = new Thread(PrintInfo);
+            printer.Start();
         }
     }
 }

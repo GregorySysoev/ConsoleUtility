@@ -49,7 +49,6 @@ namespace ConsoleUtility
                 }
             }
 
-
             if (error)
             {
                 Console.WriteLine("Произошла ошибка: некорректно введены аргументы");
@@ -62,6 +61,7 @@ namespace ConsoleUtility
             }
             if (help)
             {
+                Console.WriteLine("");
                 Console.WriteLine("Список доступных команд:");
                 Console.WriteLine("-t --thread [число] - установить кол-во потоков");
                 Console.WriteLine("-s --search [\"строка\"] - установить строку для поиска. Обязательная комадна");
@@ -69,6 +69,7 @@ namespace ConsoleUtility
                 Console.WriteLine("");
                 Console.WriteLine("Пример использования");
                 Console.WriteLine("dotnet ConsoleUtility.dll -t 2 --search \"public class Program\"");
+                Console.WriteLine("");
                 return;
             }
 
