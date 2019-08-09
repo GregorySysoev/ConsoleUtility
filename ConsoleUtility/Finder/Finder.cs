@@ -12,19 +12,19 @@ namespace ConsoleUtility
 {
     public class Finder
     {
-        private ConcurrentQueue<string> _infoToPrint;
-        IPrinter _printer;
-        private bool _filesEnds = true;
-        private string _stringToSearch;
-        private myTree.FileWriter _filesList;
-        private List<ICommand> _commands;
+        private IPrinter _printer;
         private int _countOfThreads;
+        private string _stringToSearch;
+        private List<ICommand> _commands;
+        private bool _filesEnds = false;
+        private ConcurrentQueue<string> _infoToPrint;
+        private myTree.FileWriter _filesList;
         private string _pathToFind;
         public void GetPathToFilesList()
         {
             Algorithm algorithm = new Algorithm(new string[] { }, _filesList, _pathToFind);
             algorithm.Execute();
-            _filesEnds = false;
+            _filesEnds = true;
         }
         public Dictionary<int, long> FindStringInFile(string filePath)
         {
@@ -45,7 +45,6 @@ namespace ConsoleUtility
             sw.Start();
             while ((currentString = file.ReadLine()) != null)
             {
-
                 if (currentString.Contains(_stringToSearch))
                 {
                     result.Add(line, nanosecPerTick * sw.ElapsedTicks);
@@ -71,13 +70,16 @@ namespace ConsoleUtility
 
         public void FindAndPrint()
         {
-            while (_filesList.listOfFilesConcurentQueue.TryDequeue(out string filePath) || _filesEnds)
+            while (_filesEnds)
             {
-                if ((FindStringInFile(filePath) is Dictionary<int, long> result))
+                while (_filesList.listOfFilesConcurentQueue.TryDequeue(out string filePath))
                 {
-                    foreach (var res in result)
+                    if ((FindStringInFile(filePath) is Dictionary<int, long> result))
                     {
-                        _infoToPrint.Enqueue($"{filePath} line={res.Key} time={res.Value} thread={Thread.CurrentThread.ManagedThreadId}");
+                        foreach (var res in result)
+                        {
+                            _infoToPrint.Enqueue($"{filePath} line={res.Key} time={res.Value} thread={Thread.CurrentThread.ManagedThreadId}");
+                        }
                     }
                 }
             }
@@ -85,10 +87,12 @@ namespace ConsoleUtility
 
         public void PrintInfo()
         {
-            Thread.Sleep(5000);
-            while (_infoToPrint.TryDequeue(out string informationAboutSearch))
+            while (true)
             {
-                _printer.Print(informationAboutSearch);
+                if (_infoToPrint.TryDequeue(out string informationAboutSearch))
+                {
+                    _printer.Print(informationAboutSearch);
+                }
             }
         }
         public void Find()
