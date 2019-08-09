@@ -47,28 +47,31 @@ namespace ConsoleUtility
                 }
             }
 
-            if (stringToSearch == "")
-            {
-                return;
-            }
+
             if (error)
             {
+                Console.WriteLine("Произошла ошибка: некорректно ввденные аргументы");
+                return;
+            }
+            if (stringToSearch == "")
+            {
+                Console.WriteLine("Искомая строка не введена, используйте -s \"искомая строка\"");
                 return;
             }
             if (help)
             {
+                Console.WriteLine("Список доступных команд:");
+                Console.WriteLine("-t --thread [число] - установить кол-во потоков");
+                Console.WriteLine("-s --search [\"строка\"] - установить строку для поиска. Обязательная комадна");
+                Console.WriteLine("-? --help - помощь");
+                Console.WriteLine("");
+                Console.WriteLine("Пример использования");
+                Console.WriteLine("dotnet ConsoleUtility.dll -t 2 --search \"public class Program\"");
                 return;
             }
 
-            //TODO решить что делать с help и error
-
-            // _commands.Add(new LineFoundSearchCommand());
-            // _commands.Add(new TimeCommand());
-            // _commands.Add(new PathToFileCommand());
-
-
-            Finder finder = new Finder(stringToSearch, pathToFind, _commands, countOfThreads);
-            finder.FindAndPrint(_printer);
+            Finder finder = new Finder(stringToSearch, pathToFind, _commands, countOfThreads, _printer);
+            finder.Find();
 
         }
     }

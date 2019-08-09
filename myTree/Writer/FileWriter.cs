@@ -16,14 +16,11 @@ namespace myTree
             Console.WriteLine(new System.NotImplementedException().Message);
         }
 
-        public async void Write(string prefix, FileSystemInfo info, string suffix)
+        public void Write(string prefix, FileSystemInfo info, string suffix)
         {
             if (info is FileInfo fInfo)
             {
-                await Task.Run(() =>
-                {
-                    listOfFilesConcurentQueue.Enqueue(fInfo.FullName);
-                });
+                listOfFilesConcurentQueue.Enqueue(fInfo.FullName);
             }
         }
     }

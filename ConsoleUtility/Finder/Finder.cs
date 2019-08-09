@@ -2,15 +2,19 @@ using ConsoleUtility;
 using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Threading;
+using System.Threading.Tasks;
 using myTree;
 
 namespace ConsoleUtility
 {
     public class Finder
     {
+        IPrinter _printer;
+        private bool _filesEnds = true;
         private string _stringToSearch;
-        private List<String> _pathToFilesList;
+        private ConcurrentQueue<String> _pathToFilesList;
         private myTree.FileWriter _filesList;
         private List<ICommand> _commands;
         private int _countOfThreads;
@@ -20,10 +24,20 @@ namespace ConsoleUtility
             _filesList = new myTree.FileWriter();
             Algorithm algorithm = new Algorithm(new string[] { }, _filesList, _pathToFind);
             algorithm.Execute();
+            _filesEnds = false;
         }
         public List<int> FindStringInFile(string filePath)
         {
-            StreamReader file = new StreamReader(filePath);
+            StreamReader file;
+            try
+            {
+                file = new StreamReader(filePath);
+            }
+            catch
+            {
+                return null;
+            }
+
             int line = 1;
             string currentString = "";
             List<int> result = new List<int>();
@@ -35,42 +49,48 @@ namespace ConsoleUtility
                 }
                 line++;
             }
-            // Thread t = Thread.CurrentThread;
-            // string pathToFile;
-            // _filesList.listOfFilesConcurentQueue.TryDequeue(out pathToFile);
-
             return result;
         }
         public Finder(string stringToSearch,
                         string pathToFind,
                         List<ICommand> commands,
-                        int countOfThreads)
+                        int countOfThreads,
+                        IPrinter printer)
         {
             _pathToFind = pathToFind;
             _countOfThreads = countOfThreads;
             _commands = commands;
             _stringToSearch = stringToSearch;
-            GetPathToFilesList();
+            _printer = printer;
         }
 
 
-        public void FindAndPrint(IPrinter printer)
+        public void FindAndPrint()
         {
-            // Thread threadThatFindFiles = new Thread(new ThreadStart(GetPathToFilesList));
-            // Thread[] threadsThatFindStringInFiles = new Thread[_countOfThreads];
-            // for (int i = 0; i < _countOfThreads; i++)
-            // {
-            // }
-            foreach (var file in _filesList.listOfFilesConcurentQueue)
+            while (_filesList.listOfFilesConcurentQueue.TryDequeue(out string filePath) || _filesEnds)
             {
-                if (FindStringInFile(file) is List<int> result)
+                if ((FindStringInFile(filePath) is List<int> result))
                 {
                     foreach (var res in result)
                     {
-                        printer.Print(file + " " + res.ToString());
+                        _printer.Print(filePath + " " + res.ToString());
                     }
                 }
             }
+        }
+
+        public void Find()
+        {
+            var taskGetFiles = Task.Factory.StartNew(GetPathToFilesList);
+            Thread.Sleep(200);
+
+            var tasks = new List<Task>();
+            tasks.Add(taskGetFiles);
+            for (int i = 0; i < _countOfThreads; i++)
+            {
+                tasks.Add(Task.Factory.StartNew(FindAndPrint));
+            }
+            Task.WaitAll(tasks.ToArray());
         }
     }
 }

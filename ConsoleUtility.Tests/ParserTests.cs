@@ -11,7 +11,7 @@ namespace ConsoleUtility.Tests
         [InlineData("--thread")]
         public void Parse_thread_ThreadCommand(params string[] args)
         {
-            ConsoleWriter cw = new ConsoleWriter();
+            ConsolePrinter cw = new ConsolePrinter();
 
             Manager manager = new Manager(cw);
             manager.IdentifyCommand(args);
@@ -25,7 +25,7 @@ namespace ConsoleUtility.Tests
         [InlineData("--help", "-?")]
         public void Parse_Help_HelpCommand(params string[] args)
         {
-            ConsoleWriter cw = new ConsoleWriter();
+            ConsolePrinter cw = new ConsolePrinter();
 
             Manager manager = new Manager(cw);
             manager.IdentifyCommand(args);
@@ -39,7 +39,7 @@ namespace ConsoleUtility.Tests
         [InlineData("--help", "--thread", "-?", "-t")]
         public void Parse_HelpAndThread_HelpAndThreadCommands(params string[] args)
         {
-            ConsoleWriter cw = new ConsoleWriter();
+            ConsolePrinter cw = new ConsolePrinter();
 
             Manager manager = new Manager(cw);
             manager.IdentifyCommand(args);
@@ -54,7 +54,7 @@ namespace ConsoleUtility.Tests
         [InlineData("--thread", "2", "4")]
         public void Parse_ThreadWithArg_ThreadWithArg(params string[] args)
         {
-            ConsoleWriter cw = new ConsoleWriter();
+            ConsolePrinter cw = new ConsolePrinter();
 
             Manager manager = new Manager(cw);
             manager.IdentifyCommand(args);
@@ -68,7 +68,7 @@ namespace ConsoleUtility.Tests
         [InlineData("--help", "2")]
         public void Parse_HelpWithValue_ErrorCommand(params string[] args)
         {
-            ConsoleWriter cw = new ConsoleWriter();
+            ConsolePrinter cw = new ConsolePrinter();
 
             Manager manager = new Manager(cw);
             manager.IdentifyCommand(args);
@@ -82,7 +82,7 @@ namespace ConsoleUtility.Tests
         [InlineData("--search", "искомая строка")]
         public void Parse_SearchWithString_SearchWithString(params string[] args)
         {
-            ConsoleWriter cw = new ConsoleWriter();
+            ConsolePrinter cw = new ConsolePrinter();
 
             Manager manager = new Manager(cw);
             manager.IdentifyCommand(args);
@@ -96,7 +96,7 @@ namespace ConsoleUtility.Tests
         [InlineData("--search", "искомая строка", "BadArg")]
         public void Parse_SearchWithFewString_SearchCommand(params string[] args)
         {
-            ConsoleWriter cw = new ConsoleWriter();
+            ConsolePrinter cw = new ConsolePrinter();
 
             Manager manager = new Manager(cw);
             manager.IdentifyCommand(args);
@@ -111,7 +111,7 @@ namespace ConsoleUtility.Tests
         [InlineData("-t", "4", "--search", "искомая строка", "-?")]
         public void Parse_FewArgs_Commands(params string[] args)
         {
-            ConsoleWriter cw = new ConsoleWriter();
+            ConsolePrinter cw = new ConsolePrinter();
 
             Manager manager = new Manager(cw);
             manager.IdentifyCommand(args);
